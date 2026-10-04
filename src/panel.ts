@@ -244,18 +244,35 @@ function renderDefinition(frame: HTMLIFrameElement, result: LookupResult): void 
   style.textContent = `body{margin:12px;font:14px/1.6 system-ui,sans-serif;color:#233044;overflow-wrap:anywhere}a,[data-sound]{cursor:pointer;color:#2166b5}${result.css ?? ""}`;
   doc.head.replaceChildren(style);
   doc.body.innerHTML = result.html ?? "";
+  const audioStatus = doc.createElement("p");
+  audioStatus.setAttribute("role", "status");
+  audioStatus.style.cssText = "margin:8px 0;color:#af3131;font-size:12px";
+  audioStatus.hidden = true;
+  doc.body.append(audioStatus);
   doc.addEventListener("click", (event) => {
-    const target = event.target instanceof Element ? event.target : undefined;
+    // iframe nodes use a different Element constructor from the parent page.
+    const node = event.target as Node | null;
+    const target = node?.nodeType === Node.ELEMENT_NODE ? node as Element : node?.parentElement;
     if (!target) return;
     const sound = target.closest<HTMLElement>("[data-sound]");
     if (sound) {
       event.preventDefault();
       const url = sound.dataset.audioUrl;
+      audioStatus.hidden = true;
       if (url) {
         activeAudio?.pause();
-        activeAudio = new Audio(url);
-        void activeAudio.play();
+        const audio = new Audio(url);
+        activeAudio = audio;
+        void audio.play().catch(() => {
+          if (activeAudio !== audio) return;
+          audioStatus.textContent = "发音播放失败，请检查音频格式是否受 Chrome 支持。";
+          audioStatus.hidden = false;
+        });
+      } else {
+        audioStatus.textContent = "未找到发音资源，请在设置中重新导入包含配套 MDD 文件的词典目录。";
+        audioStatus.hidden = false;
       }
+      return;
     }
     const link = target.closest<HTMLElement>("[data-entry]");
     if (link?.dataset.entry) { event.preventDefault(); void searchDictionary(link.dataset.entry); }
