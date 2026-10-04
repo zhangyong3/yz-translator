@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>YZ Translator 设置</title>
+  <link rel="stylesheet" href="ui.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body class="options-body">
+  <main class="options-shell">
+    <header class="options-heading">
+      <div><p class="eyebrow">YZ Translator</p><h1>设置</h1><p>配置离线词典、翻译模型和历史记录。</p></div>
+    </header>
+
+    <section class="options-section" aria-labelledby="dictionary-heading">
+      <h2 id="dictionary-heading">离线词典</h2>
+      <p class="muted">选择包含 MDX 的目录。可选的 CSS 和 MDD 发音文件会一同导入浏览器本地存储。</p>
+      <p id="dictionary-current" class="current-value">尚未导入词典</p>
+      <input id="dictionary-files" type="file" webkitdirectory multiple hidden>
+      <div class="options-actions">
+        <button id="dictionary-import" type="button" class="primary">选择词典目录</button>
+        <button id="dictionary-remove" type="button" class="secondary">移除词典</button>
+      </div>
+      <p id="dictionary-status" class="status" role="status"></p>
+    </section>
+
+    <section class="options-section" aria-labelledby="model-heading">
+      <h2 id="model-heading">大模型</h2>
+      <p class="muted">支持 OpenAI Chat Completions 兼容接口。只有点击“整句翻译”时才发送选中的文本。</p>
+      <form id="settings-form">
+        <label class="field"><span class="field-label">API Base URL</span><input id="llm-base" class="text-input" type="url" placeholder="https://api.openai.com/v1" required></label>
+        <label class="field"><span class="field-label">API Key</span><input id="llm-key" class="text-input" type="password" autocomplete="off" placeholder="输入 API Key"></label>
+        <label class="field"><span class="field-label">模型名</span><input id="llm-model" class="text-input" type="text" placeholder="gpt-4.1-mini" required></label>
+
+        <h2 class="options-subheading">历史记录</h2>
+        <label class="field"><span class="field-label">最多保存条数（0–1000；0 表示关闭）</span><input id="history-limit" class="text-input" type="number" min="0" max="1000" step="1" required></label>
+        <label class="check-field"><input id="save-source" type="checkbox">记录来源页面标题和网址</label>
+        <div class="options-actions"><button id="settings-save" type="submit" class="primary">保存设置</button></div>
+        <p id="settings-status" class="status" role="status"></p>
+      </form>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

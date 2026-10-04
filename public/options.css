@@ -1,0 +1,16 @@
+.options-body{background:#f4f7fb}
+.options-shell{max-width:780px;margin:0 auto;padding:36px 18px 72px}
+.options-heading{margin-bottom:24px}
+.options-heading h1{margin:5px 0 7px;font-size:32px}
+.options-heading p:last-child{margin:0;color:#65758b;font-size:14px}
+.eyebrow{margin:0;color:#2467c8;font-size:12px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.options-section{margin:18px 0;border:1px solid #dce4ef;border-radius:16px;padding:23px 25px;background:#fff;box-shadow:0 4px 18px #1e3a5f0b}
+.options-section h2{margin:0 0 10px;font-size:19px}
+.options-section .muted{margin-top:0}
+.options-section .field{max-width:600px;margin:17px 0}
+.options-section .text-input{font-size:14px}
+.options-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.options-subheading{padding-top:12px;border-top:1px solid #e6ebf3;margin-top:28px!important}
+.current-value{border:1px solid #dce8f5;border-radius:9px;padding:12px;background:#f4f8fd;color:#2d4c72;font-size:14px;overflow-wrap:anywhere}
+.options-section button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:560px){.options-shell{padding:20px 12px 40px}.options-section{padding:18px 15px}}
