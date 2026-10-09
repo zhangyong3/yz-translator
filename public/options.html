@@ -10,7 +10,7 @@
 <body class="options-body">
   <main class="options-shell">
     <header class="options-heading">
-      <div><p class="eyebrow">YZ Translator</p><h1>设置</h1><p>配置离线词典、翻译模型和历史记录。</p></div>
+      <div><p class="eyebrow">YZ Translator</p><h1>设置</h1><p>配置离线词典、翻译模型、语音服务和历史记录。</p></div>
     </header>
 
     <section class="options-section" aria-labelledby="dictionary-heading">
@@ -33,6 +33,15 @@
         <label class="field"><span class="field-label">API Key</span><input id="llm-key" class="text-input" type="password" autocomplete="off" placeholder="输入 API Key"></label>
         <label class="field"><span class="field-label">模型名</span><input id="llm-model" class="text-input" type="text" placeholder="gpt-4.1-mini" required></label>
 
+        <h2 class="options-subheading">语音服务</h2>
+        <p class="muted">点击“生成语音”后才将选中文字发送到此服务。语音密钥与翻译密钥独立；每个服务的配置分别保存。</p>
+        <label class="field"><span class="field-label">服务商 / 接口协议</span><select id="speech-provider" class="text-input"><option value="aliyun">阿里云百炼 · 千问 TTS</option><option value="openai">OpenAI 兼容语音接口</option></select></label>
+        <label class="field"><span class="field-label">语音 API Base URL（无需追加接口路径）</span><input id="speech-base" class="text-input" type="url" required></label>
+        <label class="field"><span class="field-label">语音 API Key</span><input id="speech-key" class="text-input" type="password" autocomplete="off" placeholder="填写后即可生成语音"></label>
+        <label class="field"><span class="field-label">语音模型（可手动填写）</span><input id="speech-model" class="text-input" list="speech-model-list" required><datalist id="speech-model-list"></datalist></label>
+        <label class="field"><span class="field-label">默认音色 ID（可手动填写）</span><input id="speech-voice" class="text-input" list="speech-voice-list" required><datalist id="speech-voice-list"></datalist></label>
+        <label id="speech-instructions-field" class="field"><span class="field-label">朗读指令（可选，如：语速稍慢，清晰朗读）</span><textarea id="speech-instructions" class="text-input" rows="2" maxlength="2000"></textarea></label>
+        <p id="speech-help" class="muted"></p>
         <h2 class="options-subheading">历史记录</h2>
         <label class="field"><span class="field-label">最多保存条数（0–1000；0 表示关闭）</span><input id="history-limit" class="text-input" type="number" min="0" max="1000" step="1" required></label>
         <label class="check-field"><input id="save-source" type="checkbox">记录来源页面标题和网址</label>

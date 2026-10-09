@@ -33,3 +33,22 @@
 .word-view .dictionary-result{display:flex;flex:1;min-height:0;flex-direction:column;margin-top:10px;overflow:hidden;border:0;border-radius:0;background:transparent}
 .word-view .dictionary-word{flex:none;padding:10px 2px;border-bottom:1px solid #dce4ef}
 .word-view .definition-frame{flex:1 1 auto;width:100%;height:auto;min-height:0}
+.tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+.speech-view{min-width:0}
+.speech-text{display:block;margin-top:14px;min-height:112px}
+.speech-status{overflow-wrap:anywhere}
+.speech-player{margin-top:16px;border:1px solid #dce4ef;border-radius:12px;padding:14px;background:#fff}
+.speech-player-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.speech-player-top .speech-status{min-width:0;margin:0;font-size:12px}
+.speech-regenerate{flex:none;border-radius:6px;padding:4px 7px;color:#66758b;font-size:11px;font-weight:500;white-space:nowrap}
+.speech-playback{margin-top:16px}
+.speech-player-controls{display:flex;align-items:center;gap:12px;min-width:0}
+.speech-play{flex:0 0 auto;min-width:64px;white-space:nowrap;word-break:keep-all;line-height:1.2}
+.speech-progress{flex:1 1 0;min-width:0;width:0;accent-color:#2467c8}
+.speech-time{display:flex;justify-content:space-between;margin:10px 0;color:#66758b;font-size:12px;font-variant-numeric:tabular-nums}
+.speech-player-footer{display:flex;align-items:end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.speech-speed{display:grid;gap:5px;color:#617187;font-size:12px}
+.speech-speed select{width:auto;padding:6px 9px}
+.speech-download,.speech-actions button{white-space:nowrap;flex-shrink:0}
+.speech-note{margin-top:14px;font-size:12px}
+.speech-view button:disabled{opacity:.55;cursor:not-allowed}

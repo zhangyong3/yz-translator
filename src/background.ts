@@ -14,7 +14,7 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((message: { type?: string; text?: string; sourceTitle?: string; sourceUrl?: string }, sender, respond) => {
-  if (!["OPEN_TRANSLATION", "OPEN_DICTIONARY"].includes(message.type ?? "") || typeof message.text !== "string") return;
+  if (!["OPEN_TRANSLATION", "OPEN_DICTIONARY", "OPEN_SPEECH"].includes(message.type ?? "") || typeof message.text !== "string") return;
   const text = message.text.trim().slice(0, 1200);
   if (!text || !sender.tab?.id) { respond({ ok: false }); return; }
   const query = {
@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((message: { type?: string; text?: string; s
     sourceUrl: message.sourceUrl
   };
   const opening = chrome.sidePanel.open({ tabId: sender.tab.id });
-  const key = message.type === "OPEN_DICTIONARY" ? "dictionaryQuery" : "translateQuery";
+  const key = message.type === "OPEN_DICTIONARY" ? "dictionaryQuery" : message.type === "OPEN_SPEECH" ? "speechQuery" : "translateQuery";
   void Promise.all([opening, chrome.storage.local.set({ [key]: query })])
     .then(() => respond({ ok: true }))
     .catch((error: unknown) => respond({ ok: false, error: String(error) }));

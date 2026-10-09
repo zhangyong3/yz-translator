@@ -1,3 +1,5 @@
+import { normalizeSpeechSettings, type SpeechSettings } from "./speech-settings";
+
 export interface Settings {
   llmBaseUrl: string;
   llmApiKey: string;
@@ -5,6 +7,7 @@ export interface Settings {
   historyLimit: number;
   saveSource: boolean;
   dictionaryName: string;
+  speech: SpeechSettings;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -13,12 +16,14 @@ export const DEFAULT_SETTINGS: Settings = {
   llmModel: "gpt-4.1-mini",
   historyLimit: 100,
   saveSource: false,
-  dictionaryName: ""
+  dictionaryName: "",
+  speech: normalizeSpeechSettings()
 };
 
 export async function getSettings(): Promise<Settings> {
   const { settings } = await chrome.storage.local.get("settings");
-  return { ...DEFAULT_SETTINGS, ...(settings as Partial<Settings> | undefined) };
+  const saved = settings as Partial<Settings> | undefined;
+  return { ...DEFAULT_SETTINGS, ...saved, speech: normalizeSpeechSettings(saved?.speech) };
 }
 
 export async function saveSettings(settings: Settings): Promise<void> {

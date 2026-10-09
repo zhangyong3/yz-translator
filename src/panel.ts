@@ -1,7 +1,9 @@
 import { getSettings, type Settings } from "./shared/settings";
-import { listHistory, addHistory, deleteHistory, clearHistory, type HistoryEntry } from "./shared/history";
+import { listHistory, addHistory, deleteHistory, clearHistory, getHistoryAudio, type HistoryEntry } from "./shared/history";
 import { lookupWord, type LookupResult } from "./shared/dictionary";
-type Tab = "translate" | "word" | "history";
+import { SpeechView } from "./speech-view";
+import { normalizeSpeechSettings } from "./shared/speech-settings";
+type Tab = "translate" | "word" | "speech" | "history";
 interface Query { id: string; text: string; createdAt?: number; sourceTitle?: string; sourceUrl?: string }
 
 const app = document.getElementById("app")!;
@@ -28,6 +30,13 @@ let wordStatus = "";
 let wordRequestId = 0;
 let activeAudio: HTMLAudioElement | undefined;
 let activeAudioUrls: string[] = [];
+const speechView = new SpeechView(() => activeAudio?.pause(), async (speech) => {
+  const currentSettings = await getSettings();
+  await addHistory({ type: "speech", text: speech.text, audio: speech.blob,
+    speech: { provider: speech.provider, model: speech.model, voice: speech.voice } }, currentSettings.historyLimit);
+  await refreshHistory();
+});
+window.addEventListener("pagehide", () => speechView.dispose());
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -37,6 +46,8 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text 
 }
 
 function showTab(next: Tab): void {
+  if (next !== "speech") speechView.pause();
+  if (next === "speech") activeAudio?.pause();
   tab = next;
   render();
   if (next === "history") void refreshHistory();
@@ -45,7 +56,7 @@ function showTab(next: Tab): void {
 function render(): void {
   main.classList.toggle("word-view", tab === "word");
   nav.replaceChildren();
-  for (const [name, label] of [["translate", "整句翻译"], ["word", "查词"], ["history", "历史"]] as const) {
+  for (const [name, label] of [["translate", "整句翻译"], ["word", "查词"], ["speech", "语音"], ["history", "历史"]] as const) {
     const button = el("button", name === tab ? "active" : "", label);
     button.onclick = () => showTab(name);
     nav.append(button);
@@ -53,6 +64,7 @@ function render(): void {
   main.replaceChildren();
   if (tab === "translate") renderTranslate();
   if (tab === "word") renderWord();
+  if (tab === "speech") main.append(speechView.element());
   if (tab === "history") renderHistory();
 }
 
@@ -260,6 +272,7 @@ function renderDefinition(frame: HTMLIFrameElement, result: LookupResult): void 
       const url = sound.dataset.audioUrl;
       audioStatus.hidden = true;
       if (url) {
+        speechView.pause();
         activeAudio?.pause();
         const audio = new Audio(url);
         activeAudio = audio;
@@ -316,6 +329,10 @@ function renderHistory(): void {
     const title = el("button", "history-title", entry.text);
     title.onclick = () => {
       if (entry.type === "word") { void searchDictionary(entry.text); }
+      else if (entry.type === "speech") {
+        showTab("speech");
+        void speechView.openHistory(entry.text, () => getHistoryAudio(entry.id));
+      }
       else {
         currentQuery = { id: entry.id, text: entry.text };
         analysisText = entry.result ?? "";
@@ -323,7 +340,7 @@ function renderHistory(): void {
         showTab("translate");
       }
     };
-    const meta = el("small", "muted", `${entry.type === "word" ? "查词" : "翻译"} · ${new Date(entry.createdAt).toLocaleString()}`);
+    const meta = el("small", "muted", `${entry.type === "word" ? "查词" : entry.type === "speech" ? "语音" : "翻译"} · ${new Date(entry.createdAt).toLocaleString()}`);
     const remove = el("button", "remove-button", "删除");
     remove.onclick = async () => { await deleteHistory(entry.id); await refreshHistory(); };
     item.append(title, meta);
@@ -432,24 +449,38 @@ async function receiveDictionaryQuery(query: Query | undefined): Promise<void> {
   await chrome.storage.local.remove("dictionaryQuery");
 }
 
+async function receiveSpeechQuery(query: Query | undefined): Promise<void> {
+  if (!query?.text || query.id === lastQueryId) return;
+  lastQueryId = query.id;
+  showTab("speech");
+  // Consume immediately so closing/reopening the panel cannot repeat a paid request.
+  await chrome.storage.local.remove("speechQuery");
+  await speechView.selectText(query.text);
+}
+
 async function init(): Promise<void> {
   settings = await getSettings();
+  speechView.updateSettings(settings.speech);
   await refreshHistory();
   render();
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.settings?.newValue) {
       settings = changes.settings.newValue as Settings;
+      settings.speech = normalizeSpeechSettings(settings.speech);
+      speechView.updateSettings(settings.speech);
     }
     if (changes.translateQuery?.newValue) void receiveQuery(changes.translateQuery.newValue as Query);
     if (changes.dictionaryQuery?.newValue) void receiveDictionaryQuery(changes.dictionaryQuery.newValue as Query);
+    if (changes.speechQuery?.newValue) void receiveSpeechQuery(changes.speechQuery.newValue as Query);
   });
-  const { translateQuery, dictionaryQuery } = await chrome.storage.local.get(["translateQuery", "dictionaryQuery"]);
-  const pending = [translateQuery, dictionaryQuery].filter(Boolean) as Query[];
+  const { translateQuery, dictionaryQuery, speechQuery } = await chrome.storage.local.get(["translateQuery", "dictionaryQuery", "speechQuery"]);
+  const pending = [translateQuery, dictionaryQuery, speechQuery].filter(Boolean) as Query[];
   pending.sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0));
   const newest = pending[0];
   if (newest) {
-    if (newest.id === (dictionaryQuery as Query | undefined)?.id) void receiveDictionaryQuery(newest);
+    if (newest.id === (speechQuery as Query | undefined)?.id) void receiveSpeechQuery(newest);
+    else if (newest.id === (dictionaryQuery as Query | undefined)?.id) void receiveDictionaryQuery(newest);
     else void receiveQuery(newest);
   }
 }

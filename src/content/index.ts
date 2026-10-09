@@ -10,6 +10,9 @@ toolbar.innerHTML = `
   </button>
   <button type="button" data-action="translate" title="译整句" aria-label="译整句">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.5h9m-4.5-2v2m3.2 0c-.5 3.1-2.5 5.6-5.7 7.2m-1.4-5c1.1 2.4 3.4 4.7 6.5 6.1M14 20l3.7-9 3.8 9m-6.3-3h5.2"/></svg>
+  </button>
+  <button type="button" data-action="speech" title="生成语音" aria-label="生成语音">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5m4 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>
   </button>`;
 const style = document.createElement("style");
 style.textContent = `
@@ -86,6 +89,9 @@ toolbar.addEventListener("click", (event) => {
   if (button.dataset.action === "word") {
     toolbar.hidden = true;
     void chrome.runtime.sendMessage({ type: "OPEN_DICTIONARY", text: selectedText, sourceTitle: document.title, sourceUrl: location.href });
+  } else if (button.dataset.action === "speech") {
+    toolbar.hidden = true;
+    void chrome.runtime.sendMessage({ type: "OPEN_SPEECH", text: selectedText });
   } else {
     toolbar.hidden = true;
     void chrome.runtime.sendMessage({ type: "OPEN_TRANSLATION", text: selectedText, sourceTitle: document.title, sourceUrl: location.href });
