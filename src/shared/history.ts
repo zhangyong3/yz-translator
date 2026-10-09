@@ -76,6 +76,24 @@ export async function addHistory(entry: Omit<HistoryEntry, "id" | "createdAt"> &
   if (entry.type === "speech" && !audio?.size) throw new Error("没有可保存的语音音频");
   // Commit metadata and audio together; listing history does not load large audio blobs.
   await writeHistory((entries, files) => {
+    if (entry.type === "word") {
+      // Read and update in one transaction so simultaneous lookups cannot add duplicates.
+      const request = entries.getAll();
+      request.onsuccess = () => {
+        const history = request.result as HistoryEntry[];
+        const word = entry.text.trim().toLowerCase();
+        const matches = history.filter((old) => old.type === "word" && old.text.trim().toLowerCase() === word)
+          .sort((a, b) => b.createdAt - a.createdAt);
+        const existing = matches[0];
+        const createdAt = Math.max(Date.now(), ...history.map((old) => old.createdAt + 1));
+        entries.put(existing ? { ...existing, createdAt } : { ...metadata, id, createdAt });
+        for (const duplicate of matches.slice(1)) {
+          entries.delete(duplicate.id);
+          files.delete(duplicate.id);
+        }
+      };
+      return;
+    }
     entries.put({ ...metadata, id, createdAt: Date.now() });
     if (audio) files.put(audio, id);
   });
